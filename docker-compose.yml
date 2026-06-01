@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db-server:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: clase123
+      MYSQL_DATABASE: escuela_db
+    networks:
+      - red-admin
+
+  # ESTO ES LO QUE TE FALTA EN EL DOCKER PS
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8081:8080" # Lo ponemos en el 8081 para que no choque con Neko
+    networks:
+      - red-admin
+
+  python-app:
+    build: ./app
+    depends_on:
+      - db-server
+    networks:
+      - red-admin
+
+  neko-panel:
+    image: m1k1o/neko:chromium
+    shm_size: "2gb"
+    ports:
+      - "8080:8080"
+      - "52000-52010:52000-52010/udp"
+    environment:
+      NEKO_PASSWORD: clase
+      NEKO_ADMIN_PASSWORD: admin
+      NEKO_SCREEN: 1280x720@30
+      NEKO_ICELITE: "true"
+      NEKO_EPR: 52000-52010
+      NEKO_NAT1TO1=192.168.1.70    networks:
+      - red-admin
+
+networks:
+  red-admin:
+    driver: bridge
